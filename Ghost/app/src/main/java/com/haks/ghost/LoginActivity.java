@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,8 +30,29 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.whispersystems.libsignal.IdentityKeyPair;
+import org.whispersystems.libsignal.InvalidKeyException;
+import org.whispersystems.libsignal.SessionBuilder;
+import org.whispersystems.libsignal.SessionCipher;
+import org.whispersystems.libsignal.SignalProtocolAddress;
+import org.whispersystems.libsignal.protocol.CiphertextMessage;
+import org.whispersystems.libsignal.state.IdentityKeyStore;
+import org.whispersystems.libsignal.state.PreKeyBundle;
+import org.whispersystems.libsignal.state.PreKeyRecord;
+import org.whispersystems.libsignal.state.PreKeyStore;
+import org.whispersystems.libsignal.state.SessionStore;
+import org.whispersystems.libsignal.state.SignedPreKeyRecord;
+import org.whispersystems.libsignal.state.SignedPreKeyStore;
+import org.whispersystems.libsignal.state.impl.InMemoryIdentityKeyStore;
+import org.whispersystems.libsignal.state.impl.InMemoryPreKeyStore;
+import org.whispersystems.libsignal.state.impl.InMemorySessionStore;
+import org.whispersystems.libsignal.state.impl.InMemorySignedPreKeyStore;
+import org.whispersystems.libsignal.util.KeyHelper;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -310,6 +332,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
       try {
         // Simulate network access.
+        randomGenerateKey();
+        randomMethod();
         Thread.sleep(2000);
       } catch (InterruptedException e) {
         return false;
@@ -345,6 +369,99 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
       mAuthTask = null;
       showProgress(false);
     }
+  }
+
+  IdentityKeyPair mIdentityKey = null;
+  int mRegistrationId = 0;
+  PreKeyRecord mPreKey = null;
+  SignedPreKeyRecord mSignedPreKey = null;
+  byte[] mMessage = null;
+
+  public void randomMethod() {
+    // Create keys on installation.
+    IdentityKeyPair identityKeyPair = KeyHelper.generateIdentityKeyPair();
+    int registrationId = KeyHelper.generateRegistrationId(false);
+    List<PreKeyRecord> preKeys = KeyHelper.generatePreKeys(1, 100);
+    SignedPreKeyRecord signedPreKey = null;
+    try {
+      signedPreKey = KeyHelper.generateSignedPreKey(identityKeyPair, 5);
+    } catch (InvalidKeyException e) {
+    }
+
+    // Load keys and session information from the device.
+    Map<Long, SessionBuilder> userIdToSession = new HashMap<>();
+    int recipientId = 1;
+    int deviceId = 2;
+
+    // Establish session with the user when they are added as a friend.
+    SessionStore sessionStore = new InMemorySessionStore();
+    PreKeyStore preKeyStore = new InMemoryPreKeyStore();
+    SignedPreKeyStore signedPreKeyStore = new InMemorySignedPreKeyStore();
+    IdentityKeyStore identityKeyStore = new InMemoryIdentityKeyStore(identityKeyPair, recipientId);
+    SessionBuilder sessionBuilder = new SessionBuilder(sessionStore, preKeyStore, signedPreKeyStore,
+        identityKeyStore, new SignalProtocolAddress("3", 4));
+    try {
+      sessionBuilder.process(new PreKeyBundle(
+          mRegistrationId,
+          4,
+          mPreKey.getId(),
+          mPreKey.getKeyPair().getPublicKey(),
+          mSignedPreKey.getId(),
+          mSignedPreKey.getKeyPair().getPublicKey(),
+          mSignedPreKey.getSignature(),
+          mIdentityKey.getPublicKey()));
+    } catch (Exception e) {
+    }
+    userIdToSession.put(1L, sessionBuilder);
+
+    // Send a message to the user.
+    SessionCipher sessionCipher = new SessionCipher(
+        sessionStore,
+        preKeyStore,
+        signedPreKeyStore,
+        identityKeyStore,
+        new SignalProtocolAddress("3", 4));
+    CiphertextMessage message = null;
+    try {
+       message = sessionCipher.encrypt("Ayush".getBytes("UTF-8"));
+    } catch (Exception e) {
+    }
+    mMessage = message.serialize();
+    for (byte b : message.serialize()) {
+      Log.d("AYUSH TAG", Integer.toHexString(b));
+    }
+  }
+
+  // Remote
+  public void randomGenerateKey() {
+    // Create keys on installation.
+    IdentityKeyPair identityKeyPair = KeyHelper.generateIdentityKeyPair();
+    mIdentityKey = identityKeyPair;
+    int registrationId = KeyHelper.generateRegistrationId(false);
+    mRegistrationId = registrationId;
+    List<PreKeyRecord> preKeys = KeyHelper.generatePreKeys(1, 100);
+    mPreKey = preKeys.get(0);
+    SignedPreKeyRecord signedPreKey = null;
+    try {
+      signedPreKey = KeyHelper.generateSignedPreKey(identityKeyPair, 5);
+    } catch (InvalidKeyException e) {
+    }
+    mSignedPreKey = signedPreKey;
+
+    // Load keys and session information from the device.
+    Map<Long, SessionBuilder> userIdToSession = new HashMap<>();
+    int recipientId = 3;
+    int deviceId = 4;
+
+    // Establish session with the user when they are added as a friend.
+    /*SessionStore sessionStore = new InMemorySessionStore();
+    PreKeyStore preKeyStore = new InMemoryPreKeyStore();
+    SignedPreKeyStore signedPreKeyStore = new InMemorySignedPreKeyStore();
+    IdentityKeyStore identityStore = new InMemoryIdentityKeyStore(identityKeyPair, recipientId);
+    SessionBuilder sessionBuilder = new SessionBuilder(sessionStore, preKeyStore, signedPreKeyStore,
+        identityStore, new SignalProtocolAddress("1", 2));*/
+
+    
   }
 }
 
