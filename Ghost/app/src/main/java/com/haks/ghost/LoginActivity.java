@@ -36,10 +36,12 @@ import org.whispersystems.libsignal.SessionBuilder;
 import org.whispersystems.libsignal.SessionCipher;
 import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.protocol.CiphertextMessage;
+import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
 import org.whispersystems.libsignal.state.IdentityKeyStore;
 import org.whispersystems.libsignal.state.PreKeyBundle;
 import org.whispersystems.libsignal.state.PreKeyRecord;
 import org.whispersystems.libsignal.state.PreKeyStore;
+import org.whispersystems.libsignal.state.SessionRecord;
 import org.whispersystems.libsignal.state.SessionStore;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
 import org.whispersystems.libsignal.state.SignedPreKeyStore;
@@ -334,6 +336,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         // Simulate network access.
         randomGenerateKey();
         randomMethod();
+        randomReceive();
         Thread.sleep(2000);
       } catch (InterruptedException e) {
         return false;
@@ -390,20 +393,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     // Load keys and session information from the device.
     Map<Long, SessionBuilder> userIdToSession = new HashMap<>();
-    int recipientId = 1;
-    int deviceId = 2;
+    int deviceId = 1;
 
     // Establish session with the user when they are added as a friend.
     SessionStore sessionStore = new InMemorySessionStore();
     PreKeyStore preKeyStore = new InMemoryPreKeyStore();
+    for (PreKeyRecord preKeyRecord : preKeys) {
+      preKeyStore.storePreKey(preKeyRecord.getId(), preKeyRecord);
+    }
     SignedPreKeyStore signedPreKeyStore = new InMemorySignedPreKeyStore();
-    IdentityKeyStore identityKeyStore = new InMemoryIdentityKeyStore(identityKeyPair, recipientId);
+    signedPreKeyStore.storeSignedPreKey(signedPreKey.getId(), signedPreKey);
+    IdentityKeyStore identityKeyStore = new InMemoryIdentityKeyStore(identityKeyPair, registrationId);
+
     SessionBuilder sessionBuilder = new SessionBuilder(sessionStore, preKeyStore, signedPreKeyStore,
-        identityKeyStore, new SignalProtocolAddress("3", 4));
+        identityKeyStore, new SignalProtocolAddress(mRegistrationId + "", 2));
     try {
       sessionBuilder.process(new PreKeyBundle(
           mRegistrationId,
-          4,
+          2,
           mPreKey.getId(),
           mPreKey.getKeyPair().getPublicKey(),
           mSignedPreKey.getId(),
@@ -420,48 +427,76 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         preKeyStore,
         signedPreKeyStore,
         identityKeyStore,
-        new SignalProtocolAddress("3", 4));
+        new SignalProtocolAddress(mRegistrationId + "", 2));
     CiphertextMessage message = null;
     try {
        message = sessionCipher.encrypt("Ayush".getBytes("UTF-8"));
     } catch (Exception e) {
     }
     mMessage = message.serialize();
-    for (byte b : message.serialize()) {
-      Log.d("AYUSH TAG", Integer.toHexString(b));
+    try {
+      Log.d("AYUSHTAG", new String(mMessage, "UTF-8"));
+    } catch (Exception e) {
+      Log.d("AYUSHTAG", "ERROR");
     }
   }
+
+  SessionStore mSessionStore = null;
+  PreKeyStore mPreKeyStore = null;
+  SignedPreKeyStore mSignedPreKeyStore = null;
+  IdentityKeyStore mIdentityKeyStore = null;
+
+  SessionCipher mRemoteSessionCipher = null;
 
   // Remote
   public void randomGenerateKey() {
     // Create keys on installation.
-    IdentityKeyPair identityKeyPair = KeyHelper.generateIdentityKeyPair();
-    mIdentityKey = identityKeyPair;
-    int registrationId = KeyHelper.generateRegistrationId(false);
-    mRegistrationId = registrationId;
+    mIdentityKey = KeyHelper.generateIdentityKeyPair();
+    mRegistrationId = KeyHelper.generateRegistrationId(false);
     List<PreKeyRecord> preKeys = KeyHelper.generatePreKeys(1, 100);
     mPreKey = preKeys.get(0);
-    SignedPreKeyRecord signedPreKey = null;
     try {
-      signedPreKey = KeyHelper.generateSignedPreKey(identityKeyPair, 5);
+      mSignedPreKey = KeyHelper.generateSignedPreKey(mIdentityKey, 5);
     } catch (InvalidKeyException e) {
     }
-    mSignedPreKey = signedPreKey;
 
     // Load keys and session information from the device.
-    Map<Long, SessionBuilder> userIdToSession = new HashMap<>();
-    int recipientId = 3;
-    int deviceId = 4;
+    int deviceId = 2;
 
-    // Establish session with the user when they are added as a friend.
-    /*SessionStore sessionStore = new InMemorySessionStore();
-    PreKeyStore preKeyStore = new InMemoryPreKeyStore();
-    SignedPreKeyStore signedPreKeyStore = new InMemorySignedPreKeyStore();
-    IdentityKeyStore identityStore = new InMemoryIdentityKeyStore(identityKeyPair, recipientId);
-    SessionBuilder sessionBuilder = new SessionBuilder(sessionStore, preKeyStore, signedPreKeyStore,
-        identityStore, new SignalProtocolAddress("1", 2));*/
+    mSessionStore = new InMemorySessionStore();
+    mPreKeyStore = new InMemoryPreKeyStore();
+    for (PreKeyRecord preKeyRecord : preKeys) {
+      mPreKeyStore.storePreKey(preKeyRecord.getId(), preKeyRecord);
+    }
+    mSignedPreKeyStore = new InMemorySignedPreKeyStore();
+    mSignedPreKeyStore.storeSignedPreKey(mSignedPreKey.getId(), mSignedPreKey);
+    mIdentityKeyStore = new InMemoryIdentityKeyStore(mIdentityKey, mRegistrationId);
+  }
 
-    
+  public void randomReceive() {
+    PreKeySignalMessage preKeySignalMessage = null;
+    try {
+      preKeySignalMessage = new PreKeySignalMessage(mMessage);
+    } catch (Exception e) {
+      Log.d("HKTAG", "ERROR 1");
+    }
+    mRemoteSessionCipher = new SessionCipher(
+        mSessionStore,
+        mPreKeyStore,
+        mSignedPreKeyStore,
+        mIdentityKeyStore,
+        new SignalProtocolAddress(preKeySignalMessage.getRegistrationId() + "", 1));
+    byte[] message = null;
+    try {
+      message = mRemoteSessionCipher.decrypt(preKeySignalMessage);
+    } catch (Exception e) {
+      Log.d("HKTAG", e.toString());
+    }
+    try {
+      Log.d("HKTAG", new String(message, "UTF-8"));
+    } catch (Exception e) {
+      Log.d("HKTAG", "ERROR 3");
+    }
   }
 }
 
