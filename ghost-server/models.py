@@ -22,24 +22,27 @@ class UserModel(BaseModel):
     id = db.Column(db.Integer, primary_key=True)  # type:int
 
     # required fields after signup to send messages
-    registration_id = db.Column(db.Integer, index=True)  # type:str
+    registration_id = db.Column(db.Integer, index=True)  # type:int
     identity_public_key = db.Column(db.String())  # type:str
     signed_pre_key = db.Column(db.String())  # type:str
     one_time_pre_keys = db.Column(ARRAY(db.String())) # type: List[str]
+
+    friends = db.Column(ARRAY(db.Integer())) # type: List[int]
+
 
     # LoginModel reference
     login = relationship("LoginModel", uselist=False, back_populates="user")  # type:LoginModel
 
     def to_dict(self):
-        return {'email': self.login.email,
+        return {'username': self.login.username,
                 'registration_id': self.registration_id,
                 'identity_public_key': self.identity_public_key,
                 'one_time_pre_key': self.one_time_pre_keys,
                 'signed_pre_key': self.signed_pre_key}
 
     def to_public_dict(self):
-        one_time_pre_key = self.one_time_pre_keys[0]       
-        return {'email': self.login.email,
+        one_time_pre_key = self.one_time_pre_keys[0]
+        return {'username': self.login.username,
                 'registration_id': self.registration_id,
                 'identity_public_key': self.identity_public_key,
                 'one_time_pre_key': one_time_pre_key,
@@ -49,7 +52,7 @@ class UserModel(BaseModel):
 class LoginModel(BaseModel):
     __tablename__ = 'logins'
     user_id = db.Column(db.Integer, ForeignKey(UserModel.id), primary_key=True)  # type:int
-    email = db.Column(db.String(), index=True)  # type:str
+    username = db.Column(db.String(), index=True)  # type:str
     password_hash = db.Column(db.String(128))  # type:str
 
     user = relationship("UserModel", back_populates="login", uselist=False)  # type: UserModel
