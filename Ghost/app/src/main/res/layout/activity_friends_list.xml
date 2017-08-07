@@ -5,12 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.haks.ghost.FriendsListActivity"
-    android:background="#F6F6F6">
+    android:background="@color/lightBackground"
+    tools:context="com.haks.ghost.FriendsListActivity">
 
     <ListView
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:divider="@android:color/transparent"/>
+
 </LinearLayout>

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="7dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp">
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="7dp"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp">
 
     <RelativeLayout
         android:orientation="horizontal"
@@ -19,15 +20,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:textSize="20sp"
+            android:textSize="@dimen/regularTextSize"
             android:textColor="@android:color/black"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:textSize="20sp"
+            android:textSize="@dimen/regularTextSize"
             android:textColor="@android:color/black"
             android:text=">"/>
+
     </RelativeLayout>
+
 </RelativeLayout>

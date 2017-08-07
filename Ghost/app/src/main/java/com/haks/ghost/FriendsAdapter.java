@@ -1,24 +1,17 @@
 package com.haks.ghost;
 
-import android.app.Activity;
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Ayush on 2017-08-06.
- */
-
 public class FriendsAdapter extends BaseAdapter {
-  private List<Friend> mFriendList;
+  private List<User> mFriendList;
   private LayoutInflater mLayoutInflater;
 
   FriendsAdapter(LayoutInflater layoutInflater) {
@@ -26,7 +19,7 @@ public class FriendsAdapter extends BaseAdapter {
     mLayoutInflater = layoutInflater;
   }
 
-  public void addFriend(Friend friend) {
+  public void addFriend(User friend) {
     mFriendList.add(friend);
   }
 
@@ -47,7 +40,7 @@ public class FriendsAdapter extends BaseAdapter {
 
   @Override
   public View getView(int position, View convertView, ViewGroup parent) {
-    Friend friend = mFriendList.get(position);
+    User friend = mFriendList.get(position);
     View currentView = convertView == null
         ? mLayoutInflater.inflate(R.layout.friends_list_row, null)
         : convertView;

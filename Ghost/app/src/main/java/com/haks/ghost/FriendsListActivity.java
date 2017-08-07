@@ -3,16 +3,24 @@ package com.haks.ghost;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
 public class FriendsListActivity extends AppCompatActivity {
-  private final static String[] FRIENDS = {"ayush:Ayush", "hk:Hanumanth", "surudh:Surudh", "kai:Kaivalya"};
+  private final static String[] FRIENDS = {
+      "1:ayush:Ayush",
+      "2:hk:Hanumanth",
+      "3:surudh:Surudh",
+      "4:kai:Kaivalya"};
 
   private ListView mFriendsListView;
   private FriendsAdapter mFriendsAdapter;
@@ -22,19 +30,22 @@ public class FriendsListActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_friends_list);
-    setTitle("Friends");
+    setTitle(Constants.FRIENDS_SCREEN_TITLE);
     mLayoutInflater = LayoutInflater.from(this.getApplicationContext());
+
     // Fetch the list of friends.
     mFriendsAdapter = new FriendsAdapter(mLayoutInflater);
     populateFriends();
+
     // Add the adapter to the list view.
     mFriendsListView = (ListView)findViewById(R.id.list);
     mFriendsListView.setAdapter(mFriendsAdapter);
     mFriendsListView.setOnItemClickListener(new OnFriendClick(this));
+
     // Set the header.
     View listHeaderView = mLayoutInflater.inflate(R.layout.friends_list_row, null);
     TextView headerText = (TextView)listHeaderView.findViewById(R.id.name);
-    headerText.setText("Add Friends");
+    headerText.setText(Constants.ADD_FRIEND_DIALOG_TITLE);
     mFriendsListView.addHeaderView(listHeaderView);
   }
 
@@ -53,10 +64,32 @@ public class FriendsListActivity extends AppCompatActivity {
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
       if (position == 0) {
         // Trying to add a new friend.
+        final AlertDialog addFriendDialog = new AlertDialog.Builder(FriendsListActivity.this)
+            .setTitle(Constants.ADD_FRIEND_DIALOG_TITLE)
+            .setView(R.layout.add_friend_dialog)
+            .create();
+        addFriendDialog.show();  // This must be called before adding the onClickListeners.
+        Button addFriendButton = (Button)addFriendDialog.findViewById(R.id.add);
+        addFriendButton.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            EditText friendNameEditText = (EditText)addFriendDialog.findViewById(R.id.friend_name);
+            String friendName = friendNameEditText.getText().toString();
+            Log.d("AUYSH", friendName);
+            addFriendDialog.dismiss();
+          }
+        });
+        Button cancelFriendButton = (Button)addFriendDialog.findViewById(R.id.cancel);
+        cancelFriendButton.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            addFriendDialog.dismiss();
+          }
+        });
         return;
       }
       Intent intent = new Intent(mCurrentActivity, ChatActivity.class);
-      intent.putExtra("FRIEND", (Friend)mFriendsAdapter.getItem(position));
+      intent.putExtra(Constants.FRIEND_INTENT_KEY, (User)mFriendsAdapter.getItem(position));
       startActivity(intent);
     }
   }
@@ -76,7 +109,10 @@ public class FriendsListActivity extends AppCompatActivity {
         return null;
       }
       for (String friend : FRIENDS) {
-        mFriendsAdapter.addFriend(new Friend(friend.split(":")[0], friend.split(":")[1]));
+        mFriendsAdapter.addFriend(new User(
+            Integer.parseInt(friend.split(":")[0]),
+            friend.split(":")[1],
+            friend.split(":")[2]));
       }
       return null;
     }
