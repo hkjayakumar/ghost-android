@@ -7,4 +7,9 @@
     <string name="action_login">Login</string>
     <string name="error_invalid_login_credentials">The username or password is invalid</string>
     <string name="error_field_required">This field is required</string>
+
+    <!-- Friends Screen -->
+    <string name="add_friend_hint">Friend Name</string>
+    <string name="add_friend_add">Add</string>
+    <string name="add_friend_cancel">Cancel</string>
 </resources>

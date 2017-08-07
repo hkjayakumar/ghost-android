@@ -3,11 +3,15 @@ package com.haks.ghost;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -26,7 +30,7 @@ public class FriendsListActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_friends_list);
-    setTitle("Friends");
+    setTitle(Constants.FRIENDS_SCREEN_TITLE);
     mLayoutInflater = LayoutInflater.from(this.getApplicationContext());
 
     // Fetch the list of friends.
@@ -41,7 +45,7 @@ public class FriendsListActivity extends AppCompatActivity {
     // Set the header.
     View listHeaderView = mLayoutInflater.inflate(R.layout.friends_list_row, null);
     TextView headerText = (TextView)listHeaderView.findViewById(R.id.name);
-    headerText.setText("Add Friends");
+    headerText.setText(Constants.ADD_FRIEND_DIALOG_TITLE);
     mFriendsListView.addHeaderView(listHeaderView);
   }
 
@@ -60,10 +64,32 @@ public class FriendsListActivity extends AppCompatActivity {
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
       if (position == 0) {
         // Trying to add a new friend.
+        final AlertDialog addFriendDialog = new AlertDialog.Builder(FriendsListActivity.this)
+            .setTitle(Constants.ADD_FRIEND_DIALOG_TITLE)
+            .setView(R.layout.add_friend_dialog)
+            .create();
+        addFriendDialog.show();  // This must be called before adding the onClickListeners.
+        Button addFriendButton = (Button)addFriendDialog.findViewById(R.id.add);
+        addFriendButton.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            EditText friendNameEditText = (EditText)addFriendDialog.findViewById(R.id.friend_name);
+            String friendName = friendNameEditText.getText().toString();
+            Log.d("AUYSH", friendName);
+            addFriendDialog.dismiss();
+          }
+        });
+        Button cancelFriendButton = (Button)addFriendDialog.findViewById(R.id.cancel);
+        cancelFriendButton.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            addFriendDialog.dismiss();
+          }
+        });
         return;
       }
       Intent intent = new Intent(mCurrentActivity, ChatActivity.class);
-      intent.putExtra("FRIEND", (User)mFriendsAdapter.getItem(position));
+      intent.putExtra(Constants.FRIEND_INTENT_KEY, (User)mFriendsAdapter.getItem(position));
       startActivity(intent);
     }
   }

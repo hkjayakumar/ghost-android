@@ -20,7 +20,7 @@ public class ChatActivity extends AppCompatActivity {
     setContentView(R.layout.activity_chat);
 
     Intent intent = getIntent();
-    mFriend = (User)intent.getSerializableExtra("FRIEND");
+    mFriend = (User)intent.getSerializableExtra(Constants.FRIEND_INTENT_KEY);
     mLayout = (LinearLayout)findViewById(R.id.layout);
     mLayoutInflater = LayoutInflater.from(this.getApplicationContext());
 

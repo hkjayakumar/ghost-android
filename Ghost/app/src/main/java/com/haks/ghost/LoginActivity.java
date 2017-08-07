@@ -99,8 +99,8 @@ public class LoginActivity extends AppCompatActivity {
       return;
     }
 
-    // new UserLoginTask(username, password, this).execute((Void) null);
-    mRequestQueue.add(this.makeLoginRequest());
+    new UserLoginTask(username, password, this).execute((Void) null);
+    // mRequestQueue.add(this.makeLoginRequest());
   }
 
   private JsonObjectRequest makeLoginRequest() {
