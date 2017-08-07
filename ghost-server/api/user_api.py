@@ -34,11 +34,18 @@ def new_user():
     return jsonify({'token': login.generate_auth_token().decode('ascii'), 'error': None}), 201
 
 
-@user_api.route('/api/v1/users/keys', methods=['PUT'])
+@user_api.route('/api/v1/users/<int:user_id>/keys', methods=['PUT'])
 @auth.login_required
-def update_user_keys():
+def update_user_keys(user_id: int):
+    user = UserModel.query.filter(UserModel.id == user_id).first()  # type:UserModel
+    if user is None:
+        return bad_request(Error.ILLEGAL_ARGS, 'User with id ' + str(user_id) + ' not found')
+
     login_model = g.login  # type: LoginModel
     user = login_model.user  # type: UserModel
+
+    if user_id != user.id:
+        return bad_request(Error.ILLEGAL_ARGS, 'No permission to update user ' + str(user_id))
 
     registration_id = request.json.get('registration_id') # type:int
     identity_public_key = request.json.get('identity_public_key')  # type:str
@@ -54,7 +61,7 @@ def update_user_keys():
     user.one_time_pre_keys = one_time_pre_keys
 
     db.session.commit()
-    return jsonify({'user': user.to_dict(), 'error': None}), 200
+    return jsonify({'user': user.to_dict(), 'error': None}), 201
 
 
 @user_api.route('/api/v1/users/<int:user_id>/keys', methods=['GET'])
@@ -63,7 +70,10 @@ def get_other_user(user_id: int):
     user = UserModel.query.filter(UserModel.id == user_id).first()  # type:UserModel
     if user is None:
         return bad_request(Error.ILLEGAL_ARGS, 'User with id ' + str(user_id) + ' not found')
-    return jsonify({'user': user.to_public_dict(), 'error': None})
+    user_dict = user.to_public_dict()
+    user.one_time_pre_keys =  user.one_time_pre_keys[1:]
+    db.session.commit()
+    return jsonify({'user': user_dict, 'error': None})
 
 
 @user_api.route('/api/v1/token')
