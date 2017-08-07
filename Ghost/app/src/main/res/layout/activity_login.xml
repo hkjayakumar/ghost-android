@@ -10,11 +10,11 @@
     tools:context="com.haks.ghost.LoginActivity">
 
     <EditText
-        android:id="@+id/email"
+        android:id="@+id/username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/prompt_email"
-        android:inputType="textEmailAddress"
+        android:hint="@string/prompt_username"
+        android:inputType="text"
         android:maxLines="1"/>
 
     <EditText
@@ -26,7 +26,7 @@
         android:maxLines="1"/>
 
     <Button
-        android:id="@+id/email_sign_in_button"
+        android:id="@+id/login_button"
         style="?android:textAppearanceSmall"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

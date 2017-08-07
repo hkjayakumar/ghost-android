@@ -12,7 +12,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class FriendsListActivity extends AppCompatActivity {
-  private final static String[] FRIENDS = {"ayush:Ayush", "hk:Hanumanth", "surudh:Surudh", "kai:Kaivalya"};
+  private final static String[] FRIENDS = {
+      "1:ayush:Ayush",
+      "2:hk:Hanumanth",
+      "3:surudh:Surudh",
+      "4:kai:Kaivalya"};
 
   private ListView mFriendsListView;
   private FriendsAdapter mFriendsAdapter;
@@ -24,13 +28,16 @@ public class FriendsListActivity extends AppCompatActivity {
     setContentView(R.layout.activity_friends_list);
     setTitle("Friends");
     mLayoutInflater = LayoutInflater.from(this.getApplicationContext());
+
     // Fetch the list of friends.
     mFriendsAdapter = new FriendsAdapter(mLayoutInflater);
     populateFriends();
+
     // Add the adapter to the list view.
     mFriendsListView = (ListView)findViewById(R.id.list);
     mFriendsListView.setAdapter(mFriendsAdapter);
     mFriendsListView.setOnItemClickListener(new OnFriendClick(this));
+
     // Set the header.
     View listHeaderView = mLayoutInflater.inflate(R.layout.friends_list_row, null);
     TextView headerText = (TextView)listHeaderView.findViewById(R.id.name);
@@ -56,7 +63,7 @@ public class FriendsListActivity extends AppCompatActivity {
         return;
       }
       Intent intent = new Intent(mCurrentActivity, ChatActivity.class);
-      intent.putExtra("FRIEND", (Friend)mFriendsAdapter.getItem(position));
+      intent.putExtra("FRIEND", (User)mFriendsAdapter.getItem(position));
       startActivity(intent);
     }
   }
@@ -76,7 +83,10 @@ public class FriendsListActivity extends AppCompatActivity {
         return null;
       }
       for (String friend : FRIENDS) {
-        mFriendsAdapter.addFriend(new Friend(friend.split(":")[0], friend.split(":")[1]));
+        mFriendsAdapter.addFriend(new User(
+            Integer.parseInt(friend.split(":")[0]),
+            friend.split(":")[1],
+            friend.split(":")[2]));
       }
       return null;
     }

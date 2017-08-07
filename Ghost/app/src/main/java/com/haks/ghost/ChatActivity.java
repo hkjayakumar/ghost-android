@@ -5,16 +5,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class ChatActivity extends AppCompatActivity {
+  private User mFriend;
+  private User mMe;
+
   private LinearLayout mLayout;
   private LayoutInflater mLayoutInflater;
-  private int mPreviousMessageId;
-
-  private Friend mFriend;
-  private Friend mMe;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -22,11 +20,9 @@ public class ChatActivity extends AppCompatActivity {
     setContentView(R.layout.activity_chat);
 
     Intent intent = getIntent();
-    mFriend = (Friend)intent.getSerializableExtra("FRIEND");
-    mMe = new Friend("ayush", "Ayush");
+    mFriend = (User)intent.getSerializableExtra("FRIEND");
     mLayout = (LinearLayout)findViewById(R.id.layout);
     mLayoutInflater = LayoutInflater.from(this.getApplicationContext());
-    mPreviousMessageId = 1;
 
     setTitle(mFriend.getName());
 
@@ -57,19 +53,10 @@ public class ChatActivity extends AppCompatActivity {
   }
 
   private void addMessage(String message, String author, LinearLayout messageLayout) {
-    /*RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-        RelativeLayout.LayoutParams.MATCH_PARENT,
-        RelativeLayout.LayoutParams.WRAP_CONTENT);
-    layoutParams.addRule(RelativeLayout.BELOW, mPreviousMessageId++);
-    messageLayout.setId(mPreviousMessageId);
-    messageLayout.setLayoutParams(layoutParams);*/
-
     TextView messageTextView = (TextView)messageLayout.findViewById(R.id.message);
     messageTextView.setText(message);
-
     TextView authorTextView = (TextView)messageLayout.findViewById(R.id.author);
     authorTextView.setText(author);
-
     mLayout.addView(messageLayout);
   }
 }

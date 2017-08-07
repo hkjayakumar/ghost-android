@@ -12,6 +12,14 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
 import org.whispersystems.libsignal.IdentityKeyPair;
 import org.whispersystems.libsignal.InvalidKeyException;
 import org.whispersystems.libsignal.SessionBuilder;
@@ -37,19 +45,22 @@ import java.util.List;
 import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
-  private EditText mEmailView;
+  private EditText mUsernameView;
   private EditText mPasswordView;
+
+  private RequestQueue mRequestQueue;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_login);
-    // Set up the login form.
-    mEmailView = (EditText)findViewById(R.id.email);
-    mPasswordView = (EditText)findViewById(R.id.password);
 
-    Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-    mEmailSignInButton.setOnClickListener(new OnClickListener() {
+    mUsernameView = (EditText)findViewById(R.id.username);
+    mPasswordView = (EditText)findViewById(R.id.password);
+    mRequestQueue = Volley.newRequestQueue(this);
+
+    Button loginButton = (Button) findViewById(R.id.login_button);
+    loginButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View view) {
         attemptLogin();
@@ -59,11 +70,11 @@ public class LoginActivity extends AppCompatActivity {
 
   private void attemptLogin() {
     // Reset errors.
-    mEmailView.setError(null);
+    mUsernameView.setError(null);
     mPasswordView.setError(null);
 
     // Store values at the time of the login attempt.
-    String email = mEmailView.getText().toString();
+    String username = mUsernameView.getText().toString();
     String password = mPasswordView.getText().toString();
 
     boolean cancel = false;
@@ -76,10 +87,10 @@ public class LoginActivity extends AppCompatActivity {
       cancel = true;
     }
 
-    // Check for a valid email address.
-    if (TextUtils.isEmpty(email)) {
-      mEmailView.setError(getString(R.string.error_field_required));
-      focusView = mEmailView;
+    // Check for a valid username.
+    if (TextUtils.isEmpty(username)) {
+      mUsernameView.setError(getString(R.string.error_field_required));
+      focusView = mUsernameView;
       cancel = true;
     }
 
@@ -88,16 +99,36 @@ public class LoginActivity extends AppCompatActivity {
       return;
     }
 
-    new UserLoginTask(email, password, this).execute((Void) null);
+    // new UserLoginTask(username, password, this).execute((Void) null);
+    mRequestQueue.add(this.makeLoginRequest());
+  }
+
+  private JsonObjectRequest makeLoginRequest() {
+    return new JsonObjectRequest(
+        Request.Method.GET,
+        Constants.API_BASE + Constants.API_GET_TOKEN,
+        null,
+        new Response.Listener<JSONObject>() {
+          @Override
+          public void onResponse(JSONObject response) {
+
+          }
+        },
+        new Response.ErrorListener() {
+          @Override
+          public void onErrorResponse(VolleyError error) {
+
+          }
+        });
   }
 
   public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-    private final String mEmail;
+    private final String mUsername;
     private final String mPassword;
     private final Activity mCurrentActivity;
 
-    UserLoginTask(String email, String password, Activity currentActivity) {
-      mEmail = email;
+    UserLoginTask(String username, String password, Activity currentActivity) {
+      mUsername = username;
       mPassword = password;
       mCurrentActivity = currentActivity;
     }
