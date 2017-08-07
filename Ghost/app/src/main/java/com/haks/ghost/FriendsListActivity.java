@@ -17,10 +17,10 @@ import android.widget.TextView;
 
 public class FriendsListActivity extends AppCompatActivity {
   private final static String[] FRIENDS = {
-      "1:ayush:Ayush",
-      "2:hk:Hanumanth",
-      "3:surudh:Surudh",
-      "4:kai:Kaivalya"};
+      "1:ayush",
+      "2:hk",
+      "3:surudh",
+      "4:kai"};
 
   private ListView mFriendsListView;
   private FriendsAdapter mFriendsAdapter;
@@ -89,7 +89,7 @@ public class FriendsListActivity extends AppCompatActivity {
         return;
       }
       Intent intent = new Intent(mCurrentActivity, ChatActivity.class);
-      intent.putExtra(Constants.FRIEND_INTENT_KEY, (User)mFriendsAdapter.getItem(position));
+      intent.putExtra(Constants.FRIEND_INTENT_KEY, (Friend)mFriendsAdapter.getItem(position));
       startActivity(intent);
     }
   }
@@ -109,10 +109,9 @@ public class FriendsListActivity extends AppCompatActivity {
         return null;
       }
       for (String friend : FRIENDS) {
-        mFriendsAdapter.addFriend(new User(
+        mFriendsAdapter.addFriend(new Friend(
             Integer.parseInt(friend.split(":")[0]),
-            friend.split(":")[1],
-            friend.split(":")[2]));
+            friend.split(":")[1]));
       }
       return null;
     }

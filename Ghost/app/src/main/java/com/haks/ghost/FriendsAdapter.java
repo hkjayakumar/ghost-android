@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FriendsAdapter extends BaseAdapter {
-  private List<User> mFriendList;
+  private List<Friend> mFriendList;
   private LayoutInflater mLayoutInflater;
 
   FriendsAdapter(LayoutInflater layoutInflater) {
@@ -19,7 +19,7 @@ public class FriendsAdapter extends BaseAdapter {
     mLayoutInflater = layoutInflater;
   }
 
-  public void addFriend(User friend) {
+  public void addFriend(Friend friend) {
     mFriendList.add(friend);
   }
 
@@ -40,12 +40,12 @@ public class FriendsAdapter extends BaseAdapter {
 
   @Override
   public View getView(int position, View convertView, ViewGroup parent) {
-    User friend = mFriendList.get(position);
+    Friend friend = mFriendList.get(position);
     View currentView = convertView == null
         ? mLayoutInflater.inflate(R.layout.friends_list_row, null)
         : convertView;
     TextView nameTextView = (TextView)currentView.findViewById(R.id.name);
-    nameTextView.setText(friend.getName());
+    nameTextView.setText(friend.getUsername());
     return currentView;
   }
 }

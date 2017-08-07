@@ -8,7 +8,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class ChatActivity extends AppCompatActivity {
-  private User mFriend;
+  private Friend mFriend;
   private User mMe;
 
   private LinearLayout mLayout;
@@ -20,11 +20,11 @@ public class ChatActivity extends AppCompatActivity {
     setContentView(R.layout.activity_chat);
 
     Intent intent = getIntent();
-    mFriend = (User)intent.getSerializableExtra(Constants.FRIEND_INTENT_KEY);
+    mFriend = (Friend)intent.getSerializableExtra(Constants.FRIEND_INTENT_KEY);
     mLayout = (LinearLayout)findViewById(R.id.layout);
     mLayoutInflater = LayoutInflater.from(this.getApplicationContext());
 
-    setTitle(mFriend.getName());
+    setTitle(mFriend.getUsername());
 
     addMyMessage("I am ayush!");
     addMyMessage("SECOND TEST!");
@@ -48,7 +48,7 @@ public class ChatActivity extends AppCompatActivity {
   private void addMyFriendMessage(String message) {
     this.addMessage(
         message,
-        mFriend.getName(),
+        mFriend.getUsername(),
         (LinearLayout)mLayoutInflater.inflate(R.layout.friend_message_layout, null));
   }
 
