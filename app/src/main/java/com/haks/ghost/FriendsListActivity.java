@@ -25,14 +25,21 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.whispersystems.libsignal.IdentityKey;
 import org.whispersystems.libsignal.SessionBuilder;
+import org.whispersystems.libsignal.SessionCipher;
 import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.ecc.Curve;
 import org.whispersystems.libsignal.ecc.ECPublicKey;
+import org.whispersystems.libsignal.protocol.CiphertextMessage;
+import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
+import org.whispersystems.libsignal.protocol.SignalMessage;
 import org.whispersystems.libsignal.state.PreKeyBundle;
+import org.whispersystems.libsignal.state.PreKeyRecord;
+import org.whispersystems.libsignal.state.SignedPreKeyRecord;
 
 public class FriendsListActivity extends AppCompatActivity {
   private User mMe;
 
+  private Activity mActivity;
   private ListView mFriendsListView;
   private FriendsAdapter mFriendsAdapter;
   private LayoutInflater mLayoutInflater;
@@ -44,6 +51,8 @@ public class FriendsListActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_friends_list);
     setTitle(Constants.FRIENDS_SCREEN_TITLE);
+
+    mActivity = this;
     mLayoutInflater = LayoutInflater.from(this.getApplicationContext());
 
     // Setup Volley.
@@ -176,6 +185,9 @@ public class FriendsListActivity extends AppCompatActivity {
               int friendPreKeyId = Integer.parseInt(preKeyInfo[0]);
               ECPublicKey friendOneTimePublicPreKey =
                   Curve.decodePoint(Base64.decode(preKeyInfo[1], Base64.DEFAULT), 0);
+              Log.d("FRIENDS_LIST_ACTIVITY", "PRE KEY BEFORE: " + preKeyInfo[1]);
+              Log.d("FRIENDS_LIST_ACTIVITY", "PRE KEY AFTER: "
+                  + Base64.encodeToString(friendOneTimePublicPreKey.serialize(), Base64.DEFAULT));
               String[] signedPreKeyInfo =
                   friend.getString(Constants.API_SIGNED_PRE_KEY_KEY).split(":");
               int friendSignedPreKeyId = Integer.parseInt(signedPreKeyInfo[0]);
@@ -201,9 +213,23 @@ public class FriendsListActivity extends AppCompatActivity {
                   friendSignedPreKeySignature,
                   friendIdentityPublicKey
               ));
+              SessionCipher sessionCipher = new SessionCipher(
+                  mMe.getSessionStore(),
+                  mMe.getPreKeyStore(),
+                  mMe.getSignedPreKeyStore(),
+                  mMe.getIdentityKeyStore(),
+                  new SignalProtocolAddress(friendRegistrationId + "", friendDeviceId));
+              mMe.save(mActivity);
 
               // Populate the friend list.
               populateFriends();
+
+              // Debug.
+              CiphertextMessage ct = sessionCipher.encrypt("test".getBytes("UTF-8"));
+              Log.d("FRIENDS_LIST_ACTIVITY", Base64.encodeToString(ct.serialize(), Base64.DEFAULT));
+              ct = sessionCipher.encrypt("test".getBytes("UTF-8"));
+              Log.d("FRIENDS_LIST_ACTIVITY", Base64.encodeToString(ct.serialize(), Base64.DEFAULT));
+              PreKeySignalMessage signalMessage = new PreKeySignalMessage(ct.serialize());
             } catch (Exception e) {
               Log.d("FRIENDS_LIST_ACTIVITY", "ERROR: " + e);
             }

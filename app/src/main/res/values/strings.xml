@@ -12,4 +12,8 @@
     <string name="add_friend_hint">Friend Name</string>
     <string name="add_friend_add">Add</string>
     <string name="add_friend_cancel">Cancel</string>
+
+    <!-- Chat Screen -->
+    <string name="message_hint">Type message here...</string>
+    <string name="send_message">Send</string>
 </resources>

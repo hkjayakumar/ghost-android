@@ -2,6 +2,7 @@ package com.haks.ghost;
 
 import android.content.SharedPreferences;
 import android.util.Base64;
+import android.util.Log;
 
 import org.whispersystems.libsignal.InvalidKeyIdException;
 import org.whispersystems.libsignal.state.PreKeyRecord;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GhostPreKeyStore implements PreKeyStore {
-  private static final String STORE_SP_KEY = "STORE_";
+  private static final String STORE_SP_KEY = "PRE_KEY_STORE_";
 
   private Map<Integer, byte[]> mStore = new HashMap<>();
 
@@ -23,6 +24,8 @@ public class GhostPreKeyStore implements PreKeyStore {
   public GhostPreKeyStore(List<PreKeyRecord> preKeyRecords) {
     for (PreKeyRecord preKeyRecord : preKeyRecords) {
       this.storePreKey(preKeyRecord.getId(), preKeyRecord);
+      Log.d("GHOST_PRE_KEY_STORE", "PRE KEY: " + Base64.encodeToString(
+          preKeyRecord.getKeyPair().getPublicKey().serialize(), Base64.DEFAULT));
     }
   }
 
@@ -82,6 +85,8 @@ public class GhostPreKeyStore implements PreKeyStore {
     SharedPreferences.Editor editor = sharedPreferences.edit();
     for (int key : mStore.keySet()) {
       editor.putString(STORE_SP_KEY + key, Base64.encodeToString(mStore.get(key), Base64.DEFAULT));
+      Log.d("GHOST_PRE_KEY_STORE", "PRE KEY WHEN SAVING "
+          + Base64.encodeToString(mStore.get(key), Base64.DEFAULT));
     }
     editor.commit();
   }

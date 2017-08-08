@@ -31,6 +31,7 @@ import org.whispersystems.libsignal.SessionCipher;
 import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.protocol.CiphertextMessage;
 import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
+import org.whispersystems.libsignal.protocol.SignalMessage;
 import org.whispersystems.libsignal.state.IdentityKeyStore;
 import org.whispersystems.libsignal.state.PreKeyBundle;
 import org.whispersystems.libsignal.state.PreKeyRecord;
@@ -155,7 +156,7 @@ public class LoginActivity extends AppCompatActivity {
               IdentityKeyPair identityKeyPair = KeyHelper.generateIdentityKeyPair();
               me.setIdentityKeyStore(new GhostIdentityKeyStore(identityKeyPair, registrationId));
 
-              List<PreKeyRecord> preKeyRecords = KeyHelper.generatePreKeys(1, 100);
+              List<PreKeyRecord> preKeyRecords = KeyHelper.generatePreKeys(1, 5);
               me.setPreKeyStore(new GhostPreKeyStore(preKeyRecords));
 
               SignedPreKeyRecord signedPreKeyRecord = null;
@@ -196,6 +197,8 @@ public class LoginActivity extends AppCompatActivity {
           preKeyRecord.getId() + ":"
           + Base64.encodeToString(
               preKeyRecord.getKeyPair().getPublicKey().serialize(), Base64.DEFAULT));
+      Log.d("LOGIN_ACTIVITY", "PRE KEY: " + Base64.encodeToString(
+          preKeyRecord.getKeyPair().getPublicKey().serialize(), Base64.DEFAULT));
     }
     JSONObject body = new JSONObject();
     SignedPreKeyRecord signedPreKeyRecord = user.getSignedPreKeyStore().loadFirstSignedPreKey();
@@ -248,14 +251,19 @@ public class LoginActivity extends AppCompatActivity {
   SignedPreKeyRecord mSignedPreKey = null;
   byte[] mMessage = null;
 
+  int otherRegId = 0;
+  IdentityKeyPair otherIdentityKey = null;
+  PreKeyRecord otherPreKey = null;
+  SignedPreKeyRecord otherSignedPreKey = null;
+
   public void randomMethod() {
     // Create keys on installation.
-    IdentityKeyPair identityKeyPair = KeyHelper.generateIdentityKeyPair();
-    int registrationId = KeyHelper.generateRegistrationId(false);
+    otherIdentityKey = KeyHelper.generateIdentityKeyPair();
+    otherRegId = KeyHelper.generateRegistrationId(false);
     List<PreKeyRecord> preKeys = KeyHelper.generatePreKeys(1, 100);
-    SignedPreKeyRecord signedPreKey = null;
+    otherPreKey = preKeys.get(0);
     try {
-      signedPreKey = KeyHelper.generateSignedPreKey(identityKeyPair, 5);
+      otherSignedPreKey = KeyHelper.generateSignedPreKey(otherIdentityKey, 5);
     } catch (InvalidKeyException e) {
     }
 
@@ -270,8 +278,8 @@ public class LoginActivity extends AppCompatActivity {
       preKeyStore.storePreKey(preKeyRecord.getId(), preKeyRecord);
     }
     SignedPreKeyStore signedPreKeyStore = new InMemorySignedPreKeyStore();
-    signedPreKeyStore.storeSignedPreKey(signedPreKey.getId(), signedPreKey);
-    IdentityKeyStore identityKeyStore = new InMemoryIdentityKeyStore(identityKeyPair, registrationId);
+    signedPreKeyStore.storeSignedPreKey(otherSignedPreKey.getId(), otherSignedPreKey);
+    IdentityKeyStore identityKeyStore = new InMemoryIdentityKeyStore(otherIdentityKey, otherRegId);
 
     SessionBuilder sessionBuilder = new SessionBuilder(sessionStore, preKeyStore, signedPreKeyStore,
         identityKeyStore, new SignalProtocolAddress(mRegistrationId + "", 2));
@@ -339,12 +347,27 @@ public class LoginActivity extends AppCompatActivity {
     mSignedPreKeyStore = new InMemorySignedPreKeyStore();
     mSignedPreKeyStore.storeSignedPreKey(mSignedPreKey.getId(), mSignedPreKey);
     mIdentityKeyStore = new InMemoryIdentityKeyStore(mIdentityKey, mRegistrationId);
+
+    SessionBuilder sessionBuilder = new SessionBuilder(mSessionStore, mPreKeyStore,
+        mSignedPreKeyStore, mIdentityKeyStore, new SignalProtocolAddress(otherRegId + "", 1));
+    try {
+      sessionBuilder.process(new PreKeyBundle(
+          otherRegId,
+          1,
+          otherPreKey.getId(),
+          otherPreKey.getKeyPair().getPublicKey(),
+          otherSignedPreKey.getId(),
+          otherSignedPreKey.getKeyPair().getPublicKey(),
+          otherSignedPreKey.getSignature(),
+          otherIdentityKey.getPublicKey()));
+    } catch (Exception e) {
+    }
   }
 
   public void randomReceive() {
-    PreKeySignalMessage preKeySignalMessage = null;
+    SignalMessage preKeySignalMessage = null;
     try {
-      preKeySignalMessage = new PreKeySignalMessage(mMessage);
+      preKeySignalMessage = new SignalMessage(mMessage);
     } catch (Exception e) {
       Log.d("LOGIN_ACTIVITY", "ERROR 1");
     }
@@ -353,7 +376,7 @@ public class LoginActivity extends AppCompatActivity {
         mPreKeyStore,
         mSignedPreKeyStore,
         mIdentityKeyStore,
-        new SignalProtocolAddress(preKeySignalMessage.getRegistrationId() + "", 1));
+        new SignalProtocolAddress(otherRegId + "", 1));
     byte[] message = null;
     try {
       message = mRemoteSessionCipher.decrypt(preKeySignalMessage);

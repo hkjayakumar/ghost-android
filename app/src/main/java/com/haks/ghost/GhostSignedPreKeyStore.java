@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GhostSignedPreKeyStore implements SignedPreKeyStore {
-  private static final String STORE_SP_KEY = "STORE_";
+  private static final String STORE_SP_KEY = "SIGNED_PRE_KEY_STORE_";
 
   private Map<Integer, byte[]> mStore = new HashMap<>();
   private int mFirstKey;

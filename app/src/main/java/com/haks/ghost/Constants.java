@@ -6,6 +6,7 @@ public class Constants {
   public final static String API_USERS = "/users";
   public final static String API_KEYS = "/keys";
   public final static String API_FRIENDS = "/friends";
+  public final static String API_MESSAGES = "/messages";
 
   public final static String API_USER_ID_KEY = "user_id";
   public final static String API_USERNAME_KEY = "username";
@@ -18,6 +19,12 @@ public class Constants {
   public final static String API_SIGNED_PRE_KEY_KEY = "signed_pre_key";
   public final static String API_FRIENDS_KEY = "friends";
   public final static String API_USER_KEY = "user";
+  public final static String API_MESSAGES_KEY = "messages";
+  public final static String API_MESSAGE_KEY = "message";
+  public final static String API_MESSAGE_CT_KEY = "message_ciphertext";
+  public final static String API_TIMESTAMP_KEY = "timestamp";
+  public final static String API_SENDER_ID_KEY = "sender_id";
+  public final static String API_RECEIVER_ID_KEY = "receiver_id";
 
   public final static String FRIENDS_SCREEN_TITLE = "Friends";
   public final static String ADD_FRIEND_DIALOG_TITLE = "Add Friend";

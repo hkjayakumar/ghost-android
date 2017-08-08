@@ -17,7 +17,7 @@
         android:id="@+id/message"
         android:textSize="@dimen/regularTextSize"
         android:textColor="@android:color/black"
-        android:layout_marginBottom="10dp"/>
+        android:layout_marginBottom="20dp"/>
 
     <TextView
         android:layout_width="wrap_content"
