@@ -192,11 +192,13 @@ public class LoginActivity extends AppCompatActivity {
   private RequestWithHeaders makeSendPublicKeysRequest(User user) {
     JSONArray preKeys = new JSONArray();
     for (PreKeyRecord preKeyRecord : user.getPreKeyStore().loadAll()) {
-      preKeys.put(Base64.encodeToString(
-          preKeyRecord.getKeyPair().getPublicKey().serialize(),
-          Base64.DEFAULT));
+      preKeys.put(
+          preKeyRecord.getId() + ":"
+          + Base64.encodeToString(
+              preKeyRecord.getKeyPair().getPublicKey().serialize(), Base64.DEFAULT));
     }
     JSONObject body = new JSONObject();
+    SignedPreKeyRecord signedPreKeyRecord = user.getSignedPreKeyStore().loadFirstSignedPreKey();
     try {
       body.put(Constants.API_REGISTRATION_ID_KEY, user.getRegistrationId());
       body.put(Constants.API_DEVICE_ID_KEY, user.getDeviceId());
@@ -208,12 +210,11 @@ public class LoginActivity extends AppCompatActivity {
               .serialize(), Base64.DEFAULT));
       body.put(Constants.API_ONE_TIME_PRE_KEYS_KEY, preKeys);
       body.put(Constants.API_SIGNED_PRE_KEY_KEY,
-          Base64.encodeToString(user
-              .getSignedPreKeyStore()
-              .loadFirstPreKey()
-              .getKeyPair()
-              .getPublicKey()
-              .serialize(), Base64.DEFAULT));
+          signedPreKeyRecord.getId() + ":"
+          + Base64.encodeToString(signedPreKeyRecord.getSignature(), Base64.DEFAULT) + ":"
+          + Base64.encodeToString(
+              signedPreKeyRecord.getKeyPair().getPublicKey().serialize(),
+              Base64.DEFAULT));
     } catch (Exception e) {
     }
     RequestWithHeaders sendPublicKeysRequest = new RequestWithHeaders(

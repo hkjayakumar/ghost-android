@@ -7,12 +7,17 @@ import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
+
 public class ChatActivity extends AppCompatActivity {
   private Friend mFriend;
   private User mMe;
 
   private LinearLayout mLayout;
   private LayoutInflater mLayoutInflater;
+
+  private Socket mSocket;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -21,10 +26,17 @@ public class ChatActivity extends AppCompatActivity {
 
     Intent intent = getIntent();
     mFriend = (Friend)intent.getSerializableExtra(Constants.FRIEND_INTENT_KEY);
+    setTitle(mFriend.getUsername());
+    mMe = new User(this);
+
     mLayout = (LinearLayout)findViewById(R.id.layout);
     mLayoutInflater = LayoutInflater.from(this.getApplicationContext());
 
-    setTitle(mFriend.getUsername());
+    try {
+      mSocket = IO.socket(Constants.API_BASE);
+      mSocket.connect();
+    } catch (Exception e) {
+    }
 
     addMyMessage("I am ayush!");
     addMyMessage("SECOND TEST!");
@@ -36,6 +48,13 @@ public class ChatActivity extends AppCompatActivity {
     addMyFriendMessage("I am your friend! This is so coool");
     addMyFriendMessage("I am your friend! This is so coool");
     addMyFriendMessage("I am your friend! This is so coool");
+  }
+
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    mSocket.disconnect();
+    // mSocket.off("event name", listener);
   }
 
   private void addMyMessage(String message) {

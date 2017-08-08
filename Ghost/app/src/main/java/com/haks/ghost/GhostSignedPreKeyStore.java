@@ -30,7 +30,7 @@ public class GhostSignedPreKeyStore implements SignedPreKeyStore {
     this.read(sharedPreferences);
   }
 
-  public SignedPreKeyRecord loadFirstPreKey() {
+  public SignedPreKeyRecord loadFirstSignedPreKey() {
     try {
       return new SignedPreKeyRecord(mStore.get(mFirstKey));
     } catch (Exception e) {

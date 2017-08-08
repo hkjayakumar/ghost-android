@@ -30,6 +30,15 @@ public class GhostPreKeyStore implements PreKeyStore {
     this.read(sharedPreferences);
   }
 
+  public PreKeyRecord loadAnyPreKey() {
+    try {
+      Map.Entry<Integer, byte[]> entry = mStore.entrySet().iterator().next();
+      return new PreKeyRecord(entry.getValue());
+    } catch (Exception e) {
+    }
+    return null;
+  }
+
   public List<PreKeyRecord> loadAll() {
     List<PreKeyRecord> preKeyRecords = new ArrayList<>();
     try {
