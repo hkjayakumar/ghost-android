@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 
 public class User {
   public final static String USER_SP_FILE_NAME = "User_";
+
   public final static String USER_ID_SP_KEY = "USER_ID";
   private final static String USERNAME_SP_KEY = "USERNAME";
   public final static String TOKEN_SP_KEY = "TOKEN";

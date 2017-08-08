@@ -67,6 +67,13 @@ public class GhostIdentityKeyStore implements IdentityKeyStore {
   public void save(SharedPreferences sharedPreferences) {
     SharedPreferences.Editor editor = sharedPreferences.edit();
 
+    Map<String, ?> allItems = sharedPreferences.getAll();
+    for (String key : allItems.keySet()) {
+      if (key.startsWith(TRUSTED_KEYS_SP_KEY)) {
+        editor.remove(key);
+      }
+    }
+
     for (SignalProtocolAddress address : mTrustedKeys.keySet()) {
       editor.putString(TRUSTED_KEYS_SP_KEY + address.getName() + ":" + address.getDeviceId(),
           Base64.encodeToString(mTrustedKeys.get(address).serialize(), Base64.DEFAULT));

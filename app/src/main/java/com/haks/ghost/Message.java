@@ -42,12 +42,21 @@ public class Message {
     CiphertextMessage message = null;
     try {
       message = sessionCipher.encrypt(mMessage.getBytes("UTF-8"));
-      user.save(activity);
+      // TODO(ayushbhagat): Figure out why you don't need to save the stores.
+      // user.save(activity);
     } catch (Exception e) {
       Log.d("Message", "ERROR WHEN ENCRYPTING: " + e);
     }
     String ct = Base64.encodeToString(message.serialize(), Base64.DEFAULT);
     Log.d("MESSAGE", "CIPHERTEXT IS " + ct);
+    // Debug.
+    try {
+      PreKeySignalMessage preKeySignalMessage =
+          new PreKeySignalMessage(Base64.decode(ct, Base64.DEFAULT));
+      Log.d("MESSAGE", "DECRYPTED THE ENCRYPTED MESSAGE SUCCESSFULLY");
+    } catch (Exception e) {
+      Log.d("MESSAGE", "CANNOT DECRYPT THE ENCRYPTED MESSAGE: " + e);
+    }
     return ct;
   }
 
@@ -62,7 +71,9 @@ public class Message {
       mMessage = new String(
           sessionCipher.decrypt(new PreKeySignalMessage(Base64.decode(mMessage, Base64.DEFAULT))),
           "UTF-8");
-      user.save(activity);
+      // TODO(ayushbhagat): Figure out why you need to revert the stores back to the values before
+      // decryption.
+      user.read(activity);
     } catch (Exception e) {
       Log.d("MESSAGE", "ERROR WHEN DECRYPTING: " + e);
     }

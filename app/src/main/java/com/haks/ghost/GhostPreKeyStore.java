@@ -83,6 +83,12 @@ public class GhostPreKeyStore implements PreKeyStore {
 
   public void save(SharedPreferences sharedPreferences) {
     SharedPreferences.Editor editor = sharedPreferences.edit();
+    Map<String, ?> allItems = sharedPreferences.getAll();
+    for (String key : allItems.keySet()) {
+      if (key.startsWith(STORE_SP_KEY)) {
+        editor.remove(key);
+      }
+    }
     for (int key : mStore.keySet()) {
       editor.putString(STORE_SP_KEY + key, Base64.encodeToString(mStore.get(key), Base64.DEFAULT));
       Log.d("GHOST_PRE_KEY_STORE", "PRE KEY WHEN SAVING "

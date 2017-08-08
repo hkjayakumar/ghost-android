@@ -78,6 +78,12 @@ public class GhostSessionStore implements SessionStore {
 
   public void save(SharedPreferences sharedPreferences) {
     SharedPreferences.Editor editor = sharedPreferences.edit();
+    Map<String, ?> allItems = sharedPreferences.getAll();
+    for (String key : allItems.keySet()) {
+      if (key.startsWith(SESSIONS_SP_KEY)) {
+        editor.remove(key);
+      }
+    }
     for (SignalProtocolAddress address : mSessions.keySet()) {
       editor.putString(SESSIONS_SP_KEY + address.getName() + ":" + address.getDeviceId(),
           Base64.encodeToString(mSessions.get(address), Base64.DEFAULT));
